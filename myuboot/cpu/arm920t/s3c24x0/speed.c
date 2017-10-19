@@ -135,6 +135,9 @@ ulong get_PCLK(void)
 	unsigned long camdiv;
 	int hdiv = 1;
 
+	clkdiv = clk_power->CLKDIVN;
+	camdiv = clk_power->CAMDIVN;
+
 	/* 计算分频比 */
 	switch (clkdiv & S3C2440_CLKDIVN_HDIVN_MASK) {
 		case S3C2440_CLKDIVN_HDIVN_1:

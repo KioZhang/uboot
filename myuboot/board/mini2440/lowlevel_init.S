@@ -120,8 +120,8 @@
 /* REFRESH parameter */
 #define REFEN		 	0x1	/* Refresh enable */
 #define TREFMD		 	0x0	/* CBR(CAS before RAS)/Auto refresh */
-#define Trp		 	0x0	/* 2clk */
-#define Trc		 	0x3	/* 7clk */
+#define Trp		 		0x0	/* 2clk */
+#define Trc		 		0x3	/* 7clk */
 #define Tchr		 	0x2	/* 3clk */
 #define REFCNT		 	0x4f4	/* period=7.8125us, HCLK=100Mhz, (2048+1-1.8125*100) */
 /**************************************/
