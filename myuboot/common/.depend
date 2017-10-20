@@ -1195,7 +1195,22 @@ cmd_nand.o: cmd_nand.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/asm/global_data.h \
   /home/study/uboot/myuboot/include/asm/mach-types.h \
   /home/study/uboot/myuboot/include/asm/setup.h \
-  /home/study/uboot/myuboot/include/asm/u-boot-arm.h
+  /home/study/uboot/myuboot/include/asm/u-boot-arm.h \
+  /home/study/uboot/myuboot/include/command.h \
+  /home/study/uboot/myuboot/include/watchdog.h \
+  /home/study/uboot/myuboot/include/malloc.h \
+  /home/study/uboot/myuboot/include/asm/byteorder.h \
+  /home/study/uboot/myuboot/include/linux/byteorder/little_endian.h \
+  /home/study/uboot/myuboot/include/linux/byteorder/swab.h \
+  /home/study/uboot/myuboot/include/linux/byteorder/generic.h \
+  /home/study/uboot/myuboot/include/jffs2/jffs2.h \
+  /home/study/uboot/myuboot/include/jffs2/load_kernel.h \
+  /home/study/uboot/myuboot/include/linux/list.h \
+  /home/study/uboot/myuboot/include/nand.h \
+  /home/study/uboot/myuboot/include/linux/mtd/compat.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd-abi.h \
+  /home/study/uboot/myuboot/include/linux/mtd/nand.h
 cmd_net.o: cmd_net.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/config.h \
   /home/study/uboot/myuboot/include/configs/mini2440.h \

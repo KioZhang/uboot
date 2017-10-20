@@ -88,6 +88,16 @@
 #include <jffs2/jffs2.h>
 #endif
 
+#if defined(CONFIG_S3C2400)
+#include <s3c2400.h>
+#elif defined(CONFIG_S3C2410)
+#include <s3c2410.h>
+#endif
+
+#ifdef CONFIG_SURPORT_WINCE
+#include "../../wince/loader.h"
+#endif
+
 /* Define default oob placement schemes for large and small page devices */
 static struct nand_oobinfo nand_oob_8 = {
 	.useecc = MTD_NANDECC_AUTOPLACE,
@@ -427,17 +437,17 @@ static int nand_block_bad(struct mtd_info *mtd, loff_t ofs, int getchip)
 	struct nand_chip *this = mtd->priv;
 	u16 bad;
 
+	page = (int)(ofs >> this->page_shift);
+	chipnr = (int)(ofs >> this->chip_shift);
+
 	if (getchip) {
-		page = (int)(ofs >> this->page_shift);
-		chipnr = (int)(ofs >> this->chip_shift);
 
 		/* Grab the lock and see if the device is available */
 		nand_get_device (this, mtd, FL_READING);
 
 		/* Select the NAND device */
 		this->select_chip(mtd, chipnr);
-	} else
-		page = (int) ofs;
+	} 
 
 	if (this->options & NAND_BUSWIDTH_16) {
 		this->cmdfunc (mtd, NAND_CMD_READOOB, this->badblockpos & 0xFE, page & this->pagemask);
@@ -447,9 +457,38 @@ static int nand_block_bad(struct mtd_info *mtd, loff_t ofs, int getchip)
 		if ((bad & 0xFF) != 0xff)
 			res = 1;
 	} else {
-		this->cmdfunc (mtd, NAND_CMD_READOOB, this->badblockpos, page & this->pagemask);
-		if (this->read_byte(mtd) != 0xff)
-			res = 1;
+#ifdef CONFIG_SURPORT_WINCE
+#if 0
+        char oob_buf[16];
+        SectorInfo *psi = (SectorInfo *)oob_buf;
+        int i;
+		this->cmdfunc (mtd, NAND_CMD_READOOB, 0, page & this->pagemask);
+        this->read_buf(mtd, oob_buf, 16);
+
+        if (psi->bOEMReserved == (OEM_BLOCK_RESERVED | OEM_BLOCK_READONLY) &&
+            psi->bBadBlock == BADBLOCKMARK)
+            res = 0;
+        else if (psi->bBadBlock != 0xff)
+    		res = 1;
+#endif
+        //printf("bad? ofs = 0x%x, RESERVED_BOOT_BLOCKS = 0x%x,  mtd->erasesize = 0x%x, mul = 0x%x\n", ofs, RESERVED_BOOT_BLOCKS, mtd->erasesize, RESERVED_BOOT_BLOCKS*mtd->erasesize);
+        if (ofs < RESERVED_BOOT_BLOCKS * mtd->erasesize)
+            res = 0;
+        else
+#endif        
+        {
+    		this->cmdfunc (mtd, NAND_CMD_READOOB, this->badblockpos, page & this->pagemask);
+    		if (this->read_byte(mtd) != 0xff)
+    			res = 1;
+        }
+
+        // Apply delay or wait for ready/busy pin
+        // add by www.arm9.net, if not, the erase will be failed
+		if (!this->dev_ready)
+			udelay (this->chip_delay);
+		else
+			while (!this->dev_ready(mtd));
+
 	}
 
 	if (getchip) {
@@ -517,11 +556,11 @@ static int nand_block_checkbad (struct mtd_info *mtd, loff_t ofs, int getchip, i
 {
 	struct nand_chip *this = mtd->priv;
 
-	if (!this->bbt)
+//	if (!this->bbt)
 		return this->block_bad(mtd, ofs, getchip);
 
 	/* Return info from the table */
-	return nand_isbad_bbt (mtd, ofs, allowbbt);
+//	return nand_isbad_bbt (mtd, ofs, allowbbt);
 }
 
 /**
@@ -907,7 +946,7 @@ static int nand_write_page (struct mtd_info *mtd, struct nand_chip *this, int pa
 	switch (eccmode) {
 	/* No ecc, write all */
 	case NAND_ECC_NONE:
-		printk (KERN_WARNING "Writing data without ECC to NAND-FLASH is not recommended\n");
+		//printk (KERN_WARNING "Writing data without ECC to NAND-FLASH is not recommended\n");
 		this->write_buf(mtd, this->data_poi, mtd->oobblock);
 		break;
 
@@ -1216,7 +1255,7 @@ static int nand_read_ecc (struct mtd_info *mtd, loff_t from, size_t len,
 				lastwhinge = jiffies;
 			}
 #else
-			puts("Reading data from NAND FLASH without ECC is not recommended\n");
+			//puts("Reading data from NAND FLASH without ECC is not recommended\n");
 #endif
 			this->read_buf(mtd, data_poi, end);
 			break;
@@ -1560,8 +1599,10 @@ static u_char * nand_prepare_oobbuf (struct mtd_info *mtd, u_char *fsbuf, struct
 	}
 
 	/* If we have no autoplacement or no fs buffer use the internal one */
-	if (!autoplace || !fsbuf)
-		return this->oob_buf;
+        if (!autoplace || !fsbuf) {
+                this->oobdirty = 1;                     // by mike.arm9, www.arm9.net
+                return this->oob_buf;
+        }
 
 	/* Walk through the pages and place the data */
 	this->oobdirty = 1;
@@ -1748,6 +1789,126 @@ out:
 	nand_release_device(mtd);
 
 	return ret;
+}
+
+
+/*
+ * NAND write
+ */
+int
+nand_write_calmecc(struct mtd_info *mtd, loff_t to, size_t len, 
+           size_t *retlen, const u_char *buf, unsigned int *pdwECCVal)
+{
+	int i, page, col, cnt, status, chipnr;    
+	struct nand_chip *this = mtd->priv;
+    S3C2440_NAND * const s3c2440nand = S3C2440_GetBase_NAND();
+
+	DEBUG(MTD_DEBUG_LEVEL3,
+		"%s(): to = 0x%08x, len = %i\n", __FUNCTION__, (unsigned int)to,
+		(int) len);
+
+	/* Do not allow write past end of page */
+	if ((to + len) > mtd->size) {
+		DEBUG(MTD_DEBUG_LEVEL0,
+			"%s(): Attempted write past end of device\n", __FUNCTION__);
+		return -EINVAL;
+	}
+
+	/* Shift to get page */
+	page = ((int)to) >> this->page_shift;
+
+	/* Get the starting column */
+	col = to & (mtd->oobblock - 1);
+
+	/* Initialize return length value */
+	*retlen = 0;
+
+	/* Grab the lock and see if the device is available */
+	nand_get_device (this, mtd, FL_WRITING);
+
+	/* Calculate chipnr */
+	chipnr = (int)(to >> this->chip_shift);
+	/* Select the NAND device */
+	this->select_chip(mtd, chipnr);
+
+	/* Check, if it is write protected */
+	if (nand_check_wp(mtd))
+		goto nand_write_exit;
+
+	/* Loop until all data is written */
+	while (*retlen < len) {
+		/* Write data into buffer */
+		if ((col + len) >= mtd->oobblock)
+			for (i = col, cnt = 0; i < mtd->oobblock; i++, cnt++)
+				this->data_buf[i] = buf[(*retlen + cnt)];
+		else
+			for (i = col, cnt = 0; cnt < (len - *retlen); i++, cnt++)
+				this->data_buf[i] = buf[(*retlen + cnt)];
+		/* Write ones for partial page programming */
+		for (i = mtd->oobblock; i < (mtd->oobblock + mtd->oobsize); i++)
+			this->data_buf[i] = 0xff;
+		
+		/* Write pre-padding bytes into buffer */
+		for (i = 0; i < col; i++)
+			this->data_buf[i] = 0xff;
+
+		/* Write post-padding bytes into buffer */
+		if ((col + (len - *retlen)) < mtd->oobblock) {
+			for (i = (col + cnt); i < mtd->oobblock; i++)
+				this->data_buf[i] = 0xff;
+		}
+
+        /* mike.arm9 for cal ECC */
+        s3c2440nand->NFCONT |= (1<<4);   // Reset ECC
+        s3c2440nand->NFCONT &= ~(1<<5);  // UnLock MECC
+
+		/* Send command to begin auto page programming */
+		this->cmdfunc(mtd, NAND_CMD_SEQIN, 0x00, page);
+
+		/* Write out complete page of data */
+		this->write_buf(mtd, this->data_buf, mtd->oobblock);
+
+        s3c2440nand->NFCONT |= (1<<5);   // Lock MECC
+        *pdwECCVal = s3c2440nand->NFMECC0; // Read MECC
+
+		this->write_buf(mtd, &this->data_buf[mtd->oobblock], mtd->oobsize);
+        
+    	/* Send command to actually program the data */
+    	this->cmdfunc (mtd, NAND_CMD_PAGEPROG, -1, -1);
+
+    	/* call wait ready function */
+    	status = this->waitfunc (mtd, this, FL_WRITING);
+    	/* See if device thinks it succeeded */
+    	if (status & 0x01) {
+    		DEBUG (MTD_DEBUG_LEVEL0, "%s: " "Failed write, page 0x%08x, ", __FUNCTION__, page);
+    		return -EIO;
+    	}
+
+		/* 
+		 * If we are writing a large amount of data and/or it
+		 * crosses page or half-page boundaries, we set the
+		 * the column to zero. It simplifies the program logic.
+		 */
+		if (col)
+			col = 0x00;
+
+		/* Update written bytes count */
+		*retlen += cnt;
+
+		/* Increment page address */
+		page++;
+		
+	}
+
+	/* Return happy */
+	*retlen = len;
+	i = 0;
+
+nand_write_exit:
+	/* Deselect and wake up anyone waiting on the device */
+	nand_release_device(mtd);
+
+	return i;
 }
 
 
@@ -2631,7 +2792,7 @@ int nand_scan (struct mtd_info *mtd, int maxchips)
 	mtd->owner = THIS_MODULE;
 #endif
 	/* Build bad block table */
-	return this->scan_bbt (mtd);
+	return 0; //this->scan_bbt (mtd); // cancelled by www.arm9.net, scan_bbt uses more time
 }
 
 /**

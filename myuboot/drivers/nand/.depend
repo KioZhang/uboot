@@ -23,7 +23,12 @@ nand.o: nand.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/asm/global_data.h \
   /home/study/uboot/myuboot/include/asm/mach-types.h \
   /home/study/uboot/myuboot/include/asm/setup.h \
-  /home/study/uboot/myuboot/include/asm/u-boot-arm.h
+  /home/study/uboot/myuboot/include/asm/u-boot-arm.h \
+  /home/study/uboot/myuboot/include/nand.h \
+  /home/study/uboot/myuboot/include/linux/mtd/compat.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd-abi.h \
+  /home/study/uboot/myuboot/include/linux/mtd/nand.h
 nand_base.o: nand_base.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/config.h \
   /home/study/uboot/myuboot/include/configs/mini2440.h \
@@ -49,7 +54,26 @@ nand_base.o: nand_base.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/asm/global_data.h \
   /home/study/uboot/myuboot/include/asm/mach-types.h \
   /home/study/uboot/myuboot/include/asm/setup.h \
-  /home/study/uboot/myuboot/include/asm/u-boot-arm.h
+  /home/study/uboot/myuboot/include/asm/u-boot-arm.h \
+  /home/study/uboot/myuboot/include/malloc.h \
+  /home/study/uboot/myuboot/include/watchdog.h \
+  /home/study/uboot/myuboot/include/linux/mtd/compat.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd-abi.h \
+  /home/study/uboot/myuboot/include/linux/mtd/nand.h \
+  /home/study/uboot/myuboot/include/linux/mtd/nand_ecc.h \
+  /home/study/uboot/myuboot/include/asm/io.h \
+  /home/study/uboot/myuboot/include/asm/byteorder.h \
+  /home/study/uboot/myuboot/include/linux/byteorder/little_endian.h \
+  /home/study/uboot/myuboot/include/linux/byteorder/swab.h \
+  /home/study/uboot/myuboot/include/linux/byteorder/generic.h \
+  /home/study/uboot/myuboot/include/asm/memory.h \
+  /home/study/uboot/myuboot/include/asm/errno.h \
+  /home/study/uboot/myuboot/include/jffs2/jffs2.h \
+  /home/study/uboot/myuboot/include/jffs2/load_kernel.h \
+  /home/study/uboot/myuboot/include/linux/list.h \
+  /home/study/uboot/myuboot/include/s3c2410.h \
+  /home/study/uboot/myuboot/include/s3c24x0.h
 nand_ids.o: nand_ids.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/config.h \
   /home/study/uboot/myuboot/include/configs/mini2440.h \
@@ -75,7 +99,11 @@ nand_ids.o: nand_ids.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/asm/global_data.h \
   /home/study/uboot/myuboot/include/asm/mach-types.h \
   /home/study/uboot/myuboot/include/asm/setup.h \
-  /home/study/uboot/myuboot/include/asm/u-boot-arm.h
+  /home/study/uboot/myuboot/include/asm/u-boot-arm.h \
+  /home/study/uboot/myuboot/include/linux/mtd/nand.h \
+  /home/study/uboot/myuboot/include/linux/mtd/compat.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd-abi.h
 nand_ecc.o: nand_ecc.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/config.h \
   /home/study/uboot/myuboot/include/configs/mini2440.h \
@@ -101,7 +129,9 @@ nand_ecc.o: nand_ecc.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/asm/global_data.h \
   /home/study/uboot/myuboot/include/asm/mach-types.h \
   /home/study/uboot/myuboot/include/asm/setup.h \
-  /home/study/uboot/myuboot/include/asm/u-boot-arm.h
+  /home/study/uboot/myuboot/include/asm/u-boot-arm.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd-abi.h
 nand_bbt.o: nand_bbt.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/config.h \
   /home/study/uboot/myuboot/include/configs/mini2440.h \
@@ -127,7 +157,13 @@ nand_bbt.o: nand_bbt.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/asm/global_data.h \
   /home/study/uboot/myuboot/include/asm/mach-types.h \
   /home/study/uboot/myuboot/include/asm/setup.h \
-  /home/study/uboot/myuboot/include/asm/u-boot-arm.h
+  /home/study/uboot/myuboot/include/asm/u-boot-arm.h \
+  /home/study/uboot/myuboot/include/malloc.h \
+  /home/study/uboot/myuboot/include/linux/mtd/compat.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd-abi.h \
+  /home/study/uboot/myuboot/include/linux/mtd/nand.h \
+  /home/study/uboot/myuboot/include/asm/errno.h
 nand_util.o: nand_util.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/config.h \
   /home/study/uboot/myuboot/include/configs/mini2440.h \
@@ -153,4 +189,15 @@ nand_util.o: nand_util.c /home/study/uboot/myuboot/include/common.h \
   /home/study/uboot/myuboot/include/asm/global_data.h \
   /home/study/uboot/myuboot/include/asm/mach-types.h \
   /home/study/uboot/myuboot/include/asm/setup.h \
-  /home/study/uboot/myuboot/include/asm/u-boot-arm.h
+  /home/study/uboot/myuboot/include/asm/u-boot-arm.h \
+  /home/study/uboot/myuboot/include/command.h \
+  /home/study/uboot/myuboot/include/watchdog.h \
+  /home/study/uboot/myuboot/include/malloc.h \
+  /home/study/uboot/myuboot/include/nand.h \
+  /home/study/uboot/myuboot/include/linux/mtd/compat.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd.h \
+  /home/study/uboot/myuboot/include/linux/mtd/mtd-abi.h \
+  /home/study/uboot/myuboot/include/linux/mtd/nand.h \
+  /home/study/uboot/myuboot/include/jffs2/jffs2.h \
+  /home/study/uboot/myuboot/include/jffs2/load_kernel.h \
+  /home/study/uboot/myuboot/include/linux/list.h

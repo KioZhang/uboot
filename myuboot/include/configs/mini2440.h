@@ -38,11 +38,24 @@
 #define CONFIG_SMDK2410		1	/* on a SAMSUNG SMDK2410 Board  */
 
 /* input clock of PLL */
-#define CONFIG_SYS_CLK_FREQ	12000000/* the SMDK2410 has 12MHz input clock */
-
+#define CONFIG_SYS_CLK_FREQ	12000000/* the MINI2440 has 12MHz input clock */
 
 #define USE_920T_MMU		1
-#undef CONFIG_USE_IRQ			/* we don't need IRQ/FIQ stuff */
+
+#define CONFIG_USB_DEVICE   1
+
+#ifdef CONFIG_USB_DEVICE
+#define CONFIG_USE_IRQ		1
+#endif
+
+#define CONFIG_JFFS2_CMDLINE 1
+#define CONFIG_JFFS2_NAND    1
+
+#define MTDIDS_DEFAULT "nand0=nandflash0"
+#define MTDPARTS_DEFAULT "mtdparts=nandflash0:2m@0(kernel)," \
+                            "8m(jffs2)," \
+                            "-(yaffs)"
+
 
 /*
  * Size of malloc() pool
@@ -53,14 +66,24 @@
 /*
  * Hardware drivers
  */
+#if 0
 #define CONFIG_DRIVER_CS8900	1	/* we have a CS8900 on-board */
 #define CS8900_BASE		0x19000300
 #define CS8900_BUS16		1 /* the Linux driver does accesses as shorts */
+#endif
+
+#if !defined(CONFIG_DRIVER_CS8900)
+#define CONFIG_DRIVER_DM9000		1
+#define CONFIG_DM9000_USE_16BIT 	1
+#define CONFIG_DM9000_BASE			0x20000000
+#define DM9000_IO					0x20000000  
+#define DM9000_DATA					0x20000004
+#endif
 
 /*
  * select serial console configuration
  */
-#define CONFIG_SERIAL1          1	/* we use SERIAL 1 on SMDK2410 */
+#define CONFIG_SERIAL1          1	/* we use SERIAL 1 on MINI2440 */
 
 /************************************************************
  * RTC
@@ -78,10 +101,11 @@
 #define CONFIG_COMMANDS \
 			(CONFIG_CMD_DFL	 | \
 			CFG_CMD_CACHE	 | \
-			/*CFG_CMD_NAND	 |*/ \
+			CFG_CMD_NAND	 | \
 			/*CFG_CMD_EEPROM |*/ \
 			/*CFG_CMD_I2C	 |*/ \
 			/*CFG_CMD_USB	 |*/ \
+			CFG_CMD_PING	 | \
 			CFG_CMD_REGINFO  | \
 			CFG_CMD_DATE	 | \
 			CFG_CMD_ELF)
@@ -90,13 +114,14 @@
 #include <cmd_confdefs.h>
 
 #define CONFIG_BOOTDELAY	3
-/*#define CONFIG_BOOTARGS    	"root=ramfs devfs=mount console=ttySA0,9600" */
-/*#define CONFIG_ETHADDR	08:00:3e:26:0a:5b */
-#define CONFIG_NETMASK          255.255.255.0
-#define CONFIG_IPADDR		10.0.0.110
-#define CONFIG_SERVERIP		10.0.0.1
+#define CONFIG_BOOTARGS    	"noinitrd root=/dev/mtdblock2 init=/linuxrc console=ttySAC0"
+#define CONFIG_ETHADDR	    08:00:3e:26:0a:5b
+#define CONFIG_NETMASK      255.255.255.0
+#define CONFIG_IPADDR		192.168.1.111
+#define CONFIG_SERVERIP		192.168.1.1
 /*#define CONFIG_BOOTFILE	"elinos-lart" */
-/*#define CONFIG_BOOTCOMMAND	"tftp; bootm" */
+#define CONFIG_BOOTCOMMAND	"nand read.jffs2 0x32000000 kernel; bootm 0x32000000"
+
 
 #if (CONFIG_COMMANDS & CFG_CMD_KGDB)
 #define CONFIG_KGDB_BAUDRATE	115200		/* speed to run kgdb serial port */
@@ -108,7 +133,7 @@
  * Miscellaneous configurable options
  */
 #define	CFG_LONGHELP				/* undef to save memory		*/
-#define	CFG_PROMPT		"SMDK2410 # "	/* Monitor Command Prompt	*/
+#define	CFG_PROMPT		"MINI2440 > "	/* Monitor Command Prompt	*/
 #define	CFG_CBSIZE		256		/* Console I/O Buffer Size	*/
 #define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */
 #define	CFG_MAXARGS		16		/* max number of command args	*/
@@ -178,5 +203,12 @@
 
 #define	CFG_ENV_IS_IN_FLASH	1
 #define CFG_ENV_SIZE		0x10000	/* Total Size of Environment Sector */
+
+/*-----------------------------------------------------------------------
+ * NAND flash settings
+ */
+#define CFG_NAND_BASE           0	
+#define CFG_MAX_NAND_DEVICE     1	/* number of nand flash */
+#define NAND_MAX_CHIPS          1	/* number of flash chip */
 
 #endif	/* __CONFIG_H */
